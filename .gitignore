@@ -218,3 +218,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project-specific: Virtual environment & data
+.venv/
+data/raw/
+data/processed/
+*.edf
+*.fif
+*.csv.gz
+*.pt
+*.pth
+*.pkl
+results/models/

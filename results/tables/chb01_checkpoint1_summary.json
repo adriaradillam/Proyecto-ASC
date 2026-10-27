@@ -1,0 +1,31 @@
+{
+  "checkpoint": "Checkpoint 1: Data & Baseline",
+  "patient": "chb01",
+  "dataset_summary": {
+    "total_windows": 1236,
+    "preictal_windows": 876,
+    "interictal_windows": 360,
+    "seizures_evaluated": 3
+  },
+  "baseline_metrics": {
+    "roc_auc": 0.9972951547437848,
+    "pr_auc": 0.9990249891066396,
+    "sensitivity": 0.9726027397260274,
+    "specificity": 1.0,
+    "accuracy": 0.9805825242718447,
+    "f1_score": 0.9861111111111112,
+    "seizure_sensitivity": 1.0,
+    "predicted_seizures": 3,
+    "total_seizures": 3,
+    "false_alarms": 0,
+    "total_interictal_hours": 1.0,
+    "fpr_per_hour": 0.0
+  },
+  "poisson_chance_benchmark": {
+    "p_chance": 0.0,
+    "observed_sensitivity": 1.0,
+    "p_value": 0.0,
+    "is_significant": true,
+    "alpha": 0.05
+  }
+}
