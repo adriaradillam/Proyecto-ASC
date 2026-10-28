@@ -255,8 +255,8 @@ def biomarker_ablation_study(
     from src.evaluation.loso import run_loso_cv
 
     cfg = config or default_config
-    n_channels = len(cfg.channels)
     n_features_per_channel = 10  # 5 rel_power + 1 slow_fast + 1 entropy + 3 hjorth
+    n_channels = X.shape[1] // n_features_per_channel
 
     # Feature group slice indices within each channel block
     feature_groups = {
@@ -345,8 +345,9 @@ def channel_importance_analysis(
     from src.evaluation.loso import run_loso_cv
 
     cfg = config or default_config
-    channels = cfg.channels
     n_features_per_channel = 10
+    n_channels = X.shape[1] // n_features_per_channel
+    channels = cfg.channels[:n_channels]
 
     results = {}
     for ch_idx, ch_name in enumerate(channels):

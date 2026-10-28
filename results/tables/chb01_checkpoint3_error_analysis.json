@@ -1,0 +1,185 @@
+{
+  "patient": "chb01",
+  "checkpoint": 3,
+  "best_model": "Random Forest",
+  "per_seizure_breakdown": [
+    {
+      "seizure_id": "chb01_chb01_03_s0",
+      "n_preictal_windows": 359,
+      "predicted": true,
+      "lead_time_sec": 1800.0,
+      "lead_time_min": 30.0,
+      "n_alarms_in_preictal": 64261,
+      "peak_preictal_prob": 1.0,
+      "mean_preictal_prob": 0.9702965468452933
+    },
+    {
+      "seizure_id": "chb01_chb01_04_s0",
+      "n_preictal_windows": 232,
+      "predicted": true,
+      "lead_time_sec": 1800.0,
+      "lead_time_min": 30.0,
+      "n_alarms_in_preictal": 18624,
+      "peak_preictal_prob": 1.0,
+      "mean_preictal_prob": 0.59901181923919
+    },
+    {
+      "seizure_id": "chb01_chb01_15_s0",
+      "n_preictal_windows": 285,
+      "predicted": true,
+      "lead_time_sec": 1800.0,
+      "lead_time_min": 30.0,
+      "n_alarms_in_preictal": 40470,
+      "peak_preictal_prob": 1.0,
+      "mean_preictal_prob": 0.9965893901420216
+    }
+  ],
+  "lead_time_analysis": {
+    "n_predicted": 3,
+    "n_total": 3,
+    "lead_times_min": [
+      30.0,
+      30.0,
+      30.0
+    ],
+    "mean_lead_time_min": 30.0,
+    "median_lead_time_min": 30.0,
+    "std_lead_time_min": 0.0,
+    "min_lead_time_min": 30.0,
+    "max_lead_time_min": 30.0,
+    "frac_above_sph": 1.0
+  },
+  "false_alarm_clustering": {
+    "n_false_alarms": 2,
+    "iai_mean_sec": 115.0,
+    "iai_std_sec": 0.0,
+    "iai_cv": 0.0,
+    "fano_factor": 0.0,
+    "iai_values_sec": [
+      115.0
+    ],
+    "interpretation": "Underdispersed (regular false alarms \u2014 unlikely in EEG)"
+  },
+  "ablation_study": {
+    "all_features": {
+      "auc_mean": 0.99112188697318,
+      "auc_std": 0.012555547850810032,
+      "delta_auc": 0.0
+    },
+    "ablate_delta": {
+      "auc_mean": 0.9919001436781608,
+      "auc_std": 0.011454926663618269,
+      "delta_auc": 0.0007782567049807732
+    },
+    "ablate_theta": {
+      "auc_mean": 0.9918223180076629,
+      "auc_std": 0.011564988782337481,
+      "delta_auc": 0.0007004310344828069
+    },
+    "ablate_alpha": {
+      "auc_mean": 0.9925826149425289,
+      "auc_std": 0.010489766545619379,
+      "delta_auc": 0.0014607279693488184
+    },
+    "ablate_beta": {
+      "auc_mean": 0.9923371647509578,
+      "auc_std": 0.010836885535426003,
+      "delta_auc": 0.0012152777777777457
+    },
+    "ablate_gamma": {
+      "auc_mean": 0.9906968390804597,
+      "auc_std": 0.013156656345353155,
+      "delta_auc": -0.0004250478927203538
+    },
+    "ablate_band_power": {
+      "auc_mean": 0.9878873773999722,
+      "auc_std": 0.017113423974230445,
+      "delta_auc": -0.003234509573207811
+    },
+    "ablate_slow_fast": {
+      "auc_mean": 0.9930615421455938,
+      "auc_std": 0.009812461199655221,
+      "delta_auc": 0.00193965517241379
+    },
+    "ablate_entropy": {
+      "auc_mean": 0.993636254789272,
+      "auc_std": 0.008999694784498346,
+      "delta_auc": 0.0025143678160919336
+    },
+    "ablate_hjorth": {
+      "auc_mean": 0.9920921648043203,
+      "auc_std": 0.011019637200088682,
+      "delta_auc": 0.0009702778311402316
+    }
+  },
+  "channel_importance": {
+    "FP1-F7": {
+      "auc_mean": 0.9758321193395875,
+      "auc_std": 0.022080418288625434
+    },
+    "F7-T7": {
+      "auc_mean": 0.9516973233438991,
+      "auc_std": 0.0341607662122712
+    },
+    "T7-P7": {
+      "auc_mean": 0.9911445326257483,
+      "auc_std": 0.00956853392916838
+    },
+    "P7-O1": {
+      "auc_mean": 0.9219253107023556,
+      "auc_std": 0.10931640334293014
+    },
+    "FP1-F3": {
+      "auc_mean": 0.9877307008813965,
+      "auc_std": 0.011564881018246057
+    },
+    "F3-C3": {
+      "auc_mean": 0.9574520872688076,
+      "auc_std": 0.05128626516872291
+    },
+    "C3-P3": {
+      "auc_mean": 0.9513184005432288,
+      "auc_std": 0.05701103546544454
+    },
+    "P3-O1": {
+      "auc_mean": 0.8898953864235478,
+      "auc_std": 0.15152892471017607
+    },
+    "FP2-F4": {
+      "auc_mean": 0.9933533850016749,
+      "auc_std": 0.007079218355448518
+    },
+    "F4-C4": {
+      "auc_mean": 0.9980041475896221,
+      "auc_std": 0.0025802728991256656
+    },
+    "C4-P4": {
+      "auc_mean": 0.8949670674063065,
+      "auc_std": 0.12952218471869517
+    },
+    "P4-O2": {
+      "auc_mean": 0.9453864176380957,
+      "auc_std": 0.06641220288195032
+    },
+    "FP2-F8": {
+      "auc_mean": 0.9773661205028868,
+      "auc_std": 0.01963436216739673
+    },
+    "F8-T8": {
+      "auc_mean": 0.9276058675919701,
+      "auc_std": 0.06610840669944297
+    },
+    "T8-P8": {
+      "auc_mean": 0.9296132262617531,
+      "auc_std": 0.09890248212466111
+    },
+    "P8-O2": {
+      "auc_mean": 0.9961446360153255,
+      "auc_std": 0.005452308035011207
+    },
+    "FZ-CZ": {
+      "auc_mean": 0.9961223238775228,
+      "auc_std": 0.005110994211100699
+    }
+  }
+}
