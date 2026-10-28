@@ -241,7 +241,13 @@ def generate_figures(
     for name, loso_res in biomarker_results.items():
         y_true = loso_res['all_y_true']
         y_prob = loso_res['all_y_prob']
-        eval_results_roc[name] = {'y_true': y_true, 'y_prob': y_prob}
+        agg = loso_res['aggregated']
+        eval_results_roc[name] = {
+            'y_true': y_true,
+            'y_prob': y_prob,
+            'roc_auc_mean': agg.get('roc_auc_mean'),
+            'pr_auc_mean': agg.get('pr_auc_mean'),
+        }
         model_probs[name] = y_prob
         model_preds_cm[name] = {
             'y_true': y_true,
@@ -251,9 +257,12 @@ def generate_figures(
             ref_y_true = y_true
 
     # EEGNet
+    eeg_agg = eegnet_result['aggregated']
     eval_results_roc['EEGNet (Raw EEG)'] = {
         'y_true': eegnet_result['all_y_true'],
-        'y_prob': eegnet_result['all_y_prob']
+        'y_prob': eegnet_result['all_y_prob'],
+        'roc_auc_mean': eeg_agg.get('roc_auc_mean'),
+        'pr_auc_mean': eeg_agg.get('pr_auc_mean'),
     }
     model_probs['EEGNet (Raw EEG)'] = eegnet_result['all_y_prob']
     model_preds_cm['EEGNet (Raw EEG)'] = {
@@ -337,7 +346,8 @@ def generate_figures(
         sop_hours=default_config.sop_min / 60.0,
         sph_hours=default_config.sph_min / 60.0,
         model_name='Random Forest',
-        output_path=FIGURES_DIR / f'{PATIENT_ID}_cp2_alarm_timeline.png'
+        output_path=FIGURES_DIR / f'{PATIENT_ID}_cp2_alarm_timeline.png',
+        y_true=y_labels
     )
     logger.info("  ✓ Alarm timeline")
 
