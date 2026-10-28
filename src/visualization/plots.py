@@ -53,23 +53,23 @@ def plot_eeg_signals_comparison(
     time_sec = np.arange(n_samples) / sfreq
 
     fig, axes = plt.subplots(n_channels, 2, figsize=(14, 10), sharex=True, sharey=True)
-    fig.suptitle("Scalp EEG Dynamics: Interictal Baseline vs. Preictal State (CHB-MIT)", fontsize=14, y=0.98)
+    fig.suptitle("Scalp EEG Dynamics: Interictal Baseline vs. Preictal State (CHB-MIT, Z-scored)", fontsize=14, fontweight='bold', y=0.98)
 
-    offset = 4.0  # Vertical separation between channels
-    
+    y_max = max(4.2, float(np.percentile(np.abs(np.concatenate([interictal_window[:n_channels], preictal_window[:n_channels]])), 99.8)) * 1.15)
+
     for i in range(n_channels):
         ch_name = channels[i] if i < len(channels) else f"Ch {i+1}"
         
         # Interictal
         axes[i, 0].plot(time_sec, interictal_window[i], color="#1f77b4", lw=0.9)
-        axes[i, 0].set_ylabel(ch_name, rotation=0, labelpad=25, va='center', fontweight='bold')
-        axes[i, 0].set_ylim(-3.5, 3.5)
+        axes[i, 0].set_ylabel(ch_name, rotation=0, labelpad=28, va='center', fontweight='bold')
+        axes[i, 0].set_ylim(-y_max, y_max)
         
         # Preictal
         axes[i, 1].plot(time_sec, preictal_window[i], color="#d62728", lw=0.9)
-        axes[i, 1].set_ylim(-3.5, 3.5)
+        axes[i, 1].set_ylim(-y_max, y_max)
 
-    axes[0, 0].set_title("Interictal (Baseline State, >= 4h from seizure)", color="#1f77b4", fontweight='bold')
+    axes[0, 0].set_title("Interictal (Baseline State, ≥ 4h from seizure)", color="#1f77b4", fontweight='bold')
     axes[0, 1].set_title("Preictal (Transition Phase, 15 min prior to onset)", color="#d62728", fontweight='bold')
     
     axes[-1, 0].set_xlabel("Time (seconds)")
@@ -96,29 +96,42 @@ def plot_biomarker_trajectories(
     Demonstrates neurophysiological preictal shift.
     """
     fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
-    fig.suptitle("Biomarker Trajectories Approaching Seizure Onset (SPH + SOP)", fontsize=14)
+    fig.suptitle("Biomarker Trajectories Approaching Seizure Onset (SPH + SOP)", fontsize=14, fontweight='bold')
+
+    preictal_mask = time_to_seizure_min <= -5.0
+    sph_mask = time_to_seizure_min >= -5.0
 
     # 1. Delta (Slow wave)
-    axes[0].plot(time_to_seizure_min, delta_power, color="#2ca02c", lw=2, label="Relative Delta Power (0.5-4 Hz)")
-    axes[0].axvspan(-5, 0, color="gray", alpha=0.3, label="SPH (5 min Intervention Horizon)")
+    axes[0].plot(time_to_seizure_min[preictal_mask], delta_power[preictal_mask], color="#2ca02c", lw=2.2, label="Relative Delta Power (0.5–4 Hz)")
+    axes[0].plot(time_to_seizure_min[sph_mask], delta_power[sph_mask], color="#2ca02c", lw=2.0, linestyle="--")
+    axes[0].fill_between(time_to_seizure_min, delta_power - 0.03, delta_power + 0.03, color="#2ca02c", alpha=0.12)
+    axes[0].axvspan(-5, 0, color="#ff7f0e", alpha=0.22, label="SPH (5 min Intervention Horizon)")
+    axes[0].axvline(-5, color="#d62728", linestyle=":", lw=1.5)
     axes[0].set_ylabel("Relative Power")
-    axes[0].legend(loc="upper left")
+    axes[0].legend(loc="upper left", frameon=True, facecolor="white", framealpha=0.9)
     axes[0].grid(True, linestyle="--", alpha=0.6)
 
     # 2. Gamma (Fast wave)
-    axes[1].plot(time_to_seizure_min, gamma_power, color="#ff7f0e", lw=2, label="Relative Gamma Power (30-45 Hz)")
-    axes[1].axvspan(-5, 0, color="gray", alpha=0.3)
+    axes[1].plot(time_to_seizure_min[preictal_mask], gamma_power[preictal_mask], color="#ff7f0e", lw=2.2, label="Relative Gamma Power (30–45 Hz)")
+    axes[1].plot(time_to_seizure_min[sph_mask], gamma_power[sph_mask], color="#ff7f0e", lw=2.0, linestyle="--")
+    axes[1].fill_between(time_to_seizure_min, gamma_power - 0.02, gamma_power + 0.02, color="#ff7f0e", alpha=0.12)
+    axes[1].axvspan(-5, 0, color="#ff7f0e", alpha=0.22, label="SPH (5 min Intervention Horizon)")
+    axes[1].axvline(-5, color="#d62728", linestyle=":", lw=1.5)
     axes[1].set_ylabel("Relative Power")
-    axes[1].legend(loc="upper left")
+    axes[1].legend(loc="upper left", frameon=True, facecolor="white", framealpha=0.9)
     axes[1].grid(True, linestyle="--", alpha=0.6)
 
     # 3. Spectral Entropy
-    axes[2].plot(time_to_seizure_min, spectral_entropy, color="#9467bd", lw=2, label="Spectral Entropy")
-    axes[2].axvspan(-5, 0, color="gray", alpha=0.3)
+    axes[2].plot(time_to_seizure_min[preictal_mask], spectral_entropy[preictal_mask], color="#9467bd", lw=2.2, label="Spectral Entropy (Normalized)")
+    axes[2].plot(time_to_seizure_min[sph_mask], spectral_entropy[sph_mask], color="#9467bd", lw=2.0, linestyle="--")
+    axes[2].fill_between(time_to_seizure_min, spectral_entropy - 0.02, spectral_entropy + 0.02, color="#9467bd", alpha=0.12)
+    axes[2].axvspan(-5, 0, color="#ff7f0e", alpha=0.22, label="SPH (5 min Intervention Horizon)")
+    axes[2].axvline(-5, color="#d62728", linestyle=":", lw=1.5)
     axes[2].set_xlabel("Time to Seizure Onset (minutes)")
     axes[2].set_ylabel("Norm. Entropy")
-    axes[2].legend(loc="upper left")
+    axes[2].legend(loc="upper right", frameon=True, facecolor="white", framealpha=0.9)
     axes[2].grid(True, linestyle="--", alpha=0.6)
+    axes[2].set_xlim(-35, 0)
 
     plt.tight_layout()
     if output_path:
@@ -130,13 +143,15 @@ def plot_biomarker_trajectories(
 
 
 def plot_roc_and_pr_curves(
-    eval_results: Dict[str, Dict[str, np.ndarray]],
+    eval_results: Dict[str, Dict[str, Any]],
     output_path: Optional[Path] = None
 ):
     """
     Plots comparative ROC and Precision-Recall curves for all evaluated models against baseline.
+    Includes zoomed-in insets for the high-sensitivity / low-FPR operating region.
     """
     from sklearn.metrics import roc_curve, precision_recall_curve, auc
+    from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
@@ -145,41 +160,64 @@ def plot_roc_and_pr_curves(
         'Random Forest': '#2ca02c',
         'Support Vector Machine': '#1f77b4',
         'Multilayer Perceptron (ANN)': '#ff7f0e',
+        'EEGNet (Raw EEG)': '#d62728',
         'Deep EEGNet (Raw EEG)': '#d62728'
     }
+
+    # Inset for ROC top-left corner
+    ax_ins_roc = inset_axes(axes[0], width="42%", height="42%", loc="center right", borderpad=1.8)
+    # Inset for PR top-right corner
+    ax_ins_pr = inset_axes(axes[1], width="42%", height="42%", loc="center left", borderpad=2.2)
 
     # 1. ROC Curves
     for model_name, res in eval_results.items():
         y_true = res['y_true']
         y_prob = res['y_prob']
         fpr, tpr, _ = roc_curve(y_true, y_prob)
-        roc_auc = auc(fpr, tpr)
+        roc_auc = res.get('roc_auc_mean', auc(fpr, tpr))
         c = colors.get(model_name, '#333333')
         style = '--' if 'Baseline' in model_name else '-'
-        axes[0].plot(fpr, tpr, color=c, lw=2, linestyle=style, label=f"{model_name} (AUC = {roc_auc:.3f})")
+        lw = 2.2 if 'Baseline' in model_name else 2.0
+        axes[0].plot(fpr, tpr, color=c, lw=lw, linestyle=style, label=f"{model_name} (AUC = {roc_auc:.3f})")
+        ax_ins_roc.plot(fpr, tpr, color=c, lw=lw, linestyle=style)
 
-    axes[0].plot([0, 1], [0, 1], 'k:', lw=1, alpha=0.7)
+    axes[0].plot([0, 1], [0, 1], 'k:', lw=1, alpha=0.7, label="Chance (AUC = 0.500)")
     axes[0].set_title("Receiver Operating Characteristic (ROC)", fontweight='bold')
-    axes[0].set_xlabel("False Positive Rate (1 - Specificity)")
+    axes[0].set_xlabel("False Positive Rate (1 − Specificity)")
     axes[0].set_ylabel("True Positive Rate (Sensitivity)")
-    axes[0].legend(loc="lower right")
+    axes[0].legend(loc="lower right", frameon=True, facecolor="white", framealpha=0.9, fontsize=9.5)
     axes[0].grid(True, linestyle="--", alpha=0.6)
+
+    ax_ins_roc.set_xlim(-0.005, 0.12)
+    ax_ins_roc.set_ylim(0.88, 1.005)
+    ax_ins_roc.set_title("Zoom: Low FPR Region", fontsize=8.5, fontweight='bold')
+    ax_ins_roc.tick_params(labelsize=8)
+    ax_ins_roc.grid(True, linestyle=":", alpha=0.5)
 
     # 2. Precision-Recall Curves
     for model_name, res in eval_results.items():
         y_true = res['y_true']
         y_prob = res['y_prob']
         prec, rec, _ = precision_recall_curve(y_true, y_prob)
-        pr_auc = auc(rec, prec)
+        pr_auc = res.get('pr_auc_mean', auc(rec, prec))
         c = colors.get(model_name, '#333333')
         style = '--' if 'Baseline' in model_name else '-'
-        axes[1].plot(rec, prec, color=c, lw=2, linestyle=style, label=f"{model_name} (PR-AUC = {pr_auc:.3f})")
+        lw = 2.2 if 'Baseline' in model_name else 2.0
+        axes[1].plot(rec, prec, color=c, lw=lw, linestyle=style, label=f"{model_name} (PR-AUC = {pr_auc:.3f})")
+        ax_ins_pr.plot(rec, prec, color=c, lw=lw, linestyle=style)
 
     axes[1].set_title("Precision-Recall (PR) Curve", fontweight='bold')
     axes[1].set_xlabel("Recall (Sensitivity)")
     axes[1].set_ylabel("Precision")
-    axes[1].legend(loc="lower left")
+    axes[1].set_ylim(0.68, 1.015)
+    axes[1].legend(loc="lower left", frameon=True, facecolor="white", framealpha=0.9, fontsize=9.5)
     axes[1].grid(True, linestyle="--", alpha=0.6)
+
+    ax_ins_pr.set_xlim(0.85, 1.005)
+    ax_ins_pr.set_ylim(0.90, 1.005)
+    ax_ins_pr.set_title("Zoom: High Recall Region", fontsize=8.5, fontweight='bold')
+    ax_ins_pr.tick_params(labelsize=8)
+    ax_ins_pr.grid(True, linestyle=":", alpha=0.5)
 
     plt.tight_layout()
     if output_path:

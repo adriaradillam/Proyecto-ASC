@@ -91,7 +91,7 @@ def run_checkpoint1(patient_id: str = "chb01"):
 
     time_points = np.linspace(-35, 0, 70)
     delta_sim = 0.25 + 0.35 / (1.0 + np.exp(-0.2 * (time_points + 15)))
-    gamma_sim = 0.15 + 0.25 * np.exp((time_points + 5) / 10.0) * (time_points < -5)
+    gamma_sim = 0.15 + 0.28 / (1.0 + np.exp(-0.22 * (time_points + 12)))
     entropy_sim = 0.85 - 0.25 / (1.0 + np.exp(-0.15 * (time_points + 12)))
     plot_biomarker_trajectories(
         time_to_seizure_min=time_points,
