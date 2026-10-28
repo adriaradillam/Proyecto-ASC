@@ -107,7 +107,7 @@ def per_seizure_breakdown(
             'predicted': bool(alarm_triggered),
             'lead_time_sec': float(lead_time_sec),
             'lead_time_min': float(lead_time_sec / 60.0),
-            'n_alarms_in_preictal': int(alarm_indices.sum()) if alarm_triggered else 0,
+            'n_alarms_in_preictal': int(len(alarm_indices)) if alarm_triggered else 0,
             'peak_preictal_prob': float(probs_in_preictal.max()),
             'mean_preictal_prob': float(probs_in_preictal.mean()),
         })

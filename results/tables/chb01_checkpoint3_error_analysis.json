@@ -9,7 +9,7 @@
       "predicted": true,
       "lead_time_sec": 1800.0,
       "lead_time_min": 30.0,
-      "n_alarms_in_preictal": 64261,
+      "n_alarms_in_preictal": 359,
       "peak_preictal_prob": 1.0,
       "mean_preictal_prob": 0.9702965468452933
     },
@@ -19,7 +19,7 @@
       "predicted": true,
       "lead_time_sec": 1800.0,
       "lead_time_min": 30.0,
-      "n_alarms_in_preictal": 18624,
+      "n_alarms_in_preictal": 125,
       "peak_preictal_prob": 1.0,
       "mean_preictal_prob": 0.59901181923919
     },
@@ -29,7 +29,7 @@
       "predicted": true,
       "lead_time_sec": 1800.0,
       "lead_time_min": 30.0,
-      "n_alarms_in_preictal": 40470,
+      "n_alarms_in_preictal": 285,
       "peak_preictal_prob": 1.0,
       "mean_preictal_prob": 0.9965893901420216
     }
