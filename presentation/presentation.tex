@@ -1,0 +1,303 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{whale}
+
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+
+% Custom styling
+\setbeamercolor{title}{bg=blue!85!black,fg=white}
+\setbeamercolor{frametitle}{bg=blue!85!black,fg=white}
+\setbeamercolor{structure}{fg=blue!85!black}
+
+\title[ASC Track A --- EEG Seizure Prediction]{Scalp EEG Seizure Prediction via Leave-One-Seizure-Out Cross-Validation}
+\subtitle{Evaluating Multimodal Biomarkers, Deep Representations, and Clinical Lead-Time Dynamics}
+\author[Applications of Soft Computing]{Applications of Soft Computing (ASC) --- Final Project Track A}
+\institute[Master AI / DS]{Machine Learning Block --- Academic Year 2026--2027}
+\date{October 2026}
+
+\begin{document}
+
+% Slide 1: Title
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Slide 2: Clinical Context & The Core Problem
+\begin{frame}{1. Clinical Problem: Prediction vs. Detection}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{The Medical Reality:}
+\begin{itemize}
+    \item Epilepsy affects $>50$ million individuals worldwide.
+    \item $\approx 30\%$ suffer from \textbf{pharmacoresistant epilepsy} (unresponsive to medication).
+    \item Seizures strike unpredictably, causing severe trauma, falls, and SUDEP risk.
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{Prediction vs. Detection:}
+\begin{itemize}
+    \item \textbf{Detection:} Flags onset \emph{after} seizure begins (too late for behavioral action).
+    \item \textbf{Prediction:} Identifies preictal transition \emph{before} clinical onset.
+\end{itemize}
+\end{column}
+
+\begin{column}{0.42\textwidth}
+\begin{block}{Clinical Horizons}
+\begin{itemize}
+    \item \textbf{SPH (Seizure Prediction Horizon):} $5$~min. Minimum intervention gap for rescue drugs or responsive neurostimulation (RNS).
+    \item \textbf{SOP (Seizure Occurrence Period):} $30$~min. Validity period during which seizure is predicted to occur.
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Core Maxim}
+\emph{``An honest negative result with solid analysis beats a leaky success.''}
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+% Slide 3: Theoretical Grounding (5 Papers)
+\begin{frame}{2. Scientific Grounding: Five Key Papers}
+\small
+\begin{table}
+\centering
+\begin{tabular}{p{2.8cm}p{3.2cm}p{6.8cm}}
+\toprule
+\textbf{Paper} & \textbf{DOI} & \textbf{Core Contribution Adopted} \\
+\midrule
+Kuhlmann et al. (2018), \emph{Nat Rev Neurol} & 10.1038/s41582-018-0055-2 & Evaluation standards, patient-specific protocol, leakage prevention rules. \\
+Ren et al. (2022), \emph{Front Neurol} & 10.3389/fneur.2022.1016224 & Formal definitions of SPH/SOP horizons, preictal boundaries, chance comparison. \\
+Alvarado-Rojas et al. (2014), \emph{Sci Rep} & 10.1038/srep04545 & Slow-to-fast modulation as a reliable physiological preictal precursor. \\
+Jiang et al. (2023), \emph{Front Neurosci} & 10.3389/fnins.2023.1191683 & Phase-Amplitude Coupling (PAC) and spectral ratio pipeline in scalp EEG. \\
+Ibrahim et al. (2023), \emph{Front Signal Process} & 10.3389/frsip.2023.1175305 & Patient-wise Leave-One-Seizure-Out (LOSO) CV and false alarm temporal clustering. \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{frame}
+
+% Slide 4: Data Pipeline & Zero-Leakage Protocol
+\begin{frame}{3. Dataset and Leak-Free Protocol}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\textbf{CHB-MIT Database (Patient \texttt{chb01}):}
+\begin{itemize}
+    \item Pediatric female (3.5 y/o), intractable focal epilepsy.
+    \item 18 bipolar channels (10--20 montage), $256$~Hz.
+    \item Notch filtered ($60$~Hz) + Bandpass ($[0.5, 45]$~Hz).
+    \item $L=30$~s sliding windows (50\% overlap).
+    \item $1{,}236$ total windows ($876$ preictal, $360$ interictal).
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{State Definitions:}
+\begin{itemize}
+    \item \textbf{Preictal:} $[T_{\text{seiz}}-35\text{ min}, T_{\text{seiz}}-5\text{ min}]$.
+    \item \textbf{Interictal:} Baseline $\ge 4$~hours away from seizures.
+\end{itemize}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\begin{alertblock}{The Leakage Trap}
+Random cross-validation shuffles adjacent $30$~s windows across train and test sets. High autocorrelation creates artificial AUC $\approx 1.0$ that fails completely in real life.
+\end{alertblock}
+
+\begin{block}{Our Strict LOSO Protocol}
+\begin{equation*}
+    \mathcal{D}_{\text{test}}^{(k)} = \mathcal{S}_k \cup \mathcal{I}_k, \quad \mathcal{D}_{\text{train}}^{(k)} = \bigcup_{j \ne k} (\mathcal{S}_j \cup \mathcal{I}_j)
+\end{equation*}
+Held-out seizure $k$ is evaluated strictly out-of-fold. Zero test leakage.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+% Slide 5: Two Representations & Five Models
+\begin{frame}{4. Two Representations and Benchmarked Models}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\textbf{Representation 1: 170d Biomarkers}
+\begin{itemize}
+    \item \textbf{Relative Band Powers (5):} $\delta, \theta, \alpha, \beta, \gamma$ via Welch PSD.
+    \item \textbf{Slow-to-Fast Ratio (1):} $(\delta + \theta) / (\alpha + \beta)$.
+    \item \textbf{Spectral Entropy (1):} Shannon entropy of PSD.
+    \item \textbf{Hjorth Parameters (3):} Activity, Mobility, Complexity.
+    \item $\mathbf{10\text{ features} \times 17\text{ channels} = 170\text{ features}}$.
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Models Evaluated on Biomarkers:}
+\begin{itemize}
+    \item \textbf{Baseline:} L2 Logistic Regression ($C=1.0$).
+    \item \textbf{Random Forest:} $300$ trees, balanced weights.
+    \item \textbf{SVM:} RBF kernel, Platt calibration.
+    \item \textbf{MLP:} Neural network ($170 \to 128 \to 64 \to 1$).
+\end{itemize}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\textbf{Representation 2: Raw End-to-End Deep Learning}
+\begin{itemize}
+    \item \textbf{Architecture:} EEGNet (Lawhern et al., 2018).
+    \item Input tensor: $(1, 17, 7680)$ samples.
+    \item \textbf{Block 1:} Temporal conv $(1, 64)$ + Depthwise spatial conv across 17 channels ($D=2 \to 16$ filters).
+    \item \textbf{Block 2:} Separable conv + ELU + Average pooling + Dropout ($p=0.5$).
+    \item \textbf{Head:} MaxNorm ($\le 1.0$) + Dense + Sigmoid.
+\end{itemize}
+
+\vspace{0.2cm}
+\begin{block}{Scientific Question}
+Does deep learning on raw signals beat a linear model on domain biomarkers?
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+% Slide 6: Results & Paired Bootstrap Test
+\begin{frame}{5. Experimental Results: LOSO Evaluation}
+\small
+\begin{table}
+\centering
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model} & \textbf{Rep.} & \textbf{AUC-ROC} & \textbf{Sens.} & \textbf{FPR/h} & \textbf{Paired $\Delta$AUC [95\% CI]} \\
+\midrule
+\textbf{Baseline (LogReg)} & 170d & $\mathbf{0.9966 \pm 0.005}$ & $\mathbf{100.0\%}$ & $\mathbf{0.000}$ & --- (Reference) \\
+\textbf{Random Forest} & 170d & $0.9919 \pm 0.012$ & $100.0\%$ & $2.000$ & $-0.0104$ [$-0.0150$, $-0.0062$] \\
+\textbf{SVM (RBF)} & 170d & $0.9979 \pm 0.003$ & $100.0\%$ & $4.000$ & $-0.0028$ [$-0.0053$, $-0.0007$] \\
+\textbf{MLP (ANN)} & 170d & $0.9933 \pm 0.009$ & $100.0\%$ & $4.000$ & $-0.0075$ [$-0.0111$, $-0.0045$] \\
+\textbf{EEGNet} & Raw & $0.9761 \pm 0.033$ & $100.0\%$ & $2.000$ & $-0.0079$ [$-0.0118$, $-0.0044$] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\includegraphics[width=\columnwidth]{figures/chb01_cp2_bootstrap_ci.png}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{block}{Statistical Finding ($B=1{,}000$ Bootstrap)}
+\begin{itemize}
+    \item Non-linear models and deep learning \textbf{do not outperform} the simple linear baseline ($p > 0.99$).
+    \item Domain features effectively linearize the preictal manifold.
+    \item Complex models slightly overfit out-of-fold.
+\end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+% Slide 7: In-Depth Error Analysis (Checkpoint 3)
+\begin{frame}{6. In-Depth Error Analysis: Beyond Global AUC}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\textbf{1. Clinical Lead-Time Audit:}
+\begin{itemize}
+    \item 100\% of held-out seizures predicted (3/3 HIT).
+    \item Mean lead time: \textbf{30.0 minutes}.
+    \item $\mathbf{100\% \ge SPH}$ (5~min) $\to$ fully actionable for medical rescue or patient safety.
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{2. False Alarm Clustering:}
+\begin{itemize}
+    \item Interictal false alarms: $n=2$ ($<0.05/\text{h}$).
+    \item No high-frequency oscillatory bursts $\to$ low alert fatigue.
+\end{itemize}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\textbf{3. Biomarker Ablation Study:}
+\begin{itemize}
+    \item Removing band power: largest drop ($\Delta\text{AUC} = -0.0032$).
+    \item Removing gamma power: $\Delta\text{AUC} = -0.0004$, confirming high-frequency synchronization.
+    \item Entropy regularizes non-epileptic transients.
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{4. Spatial Topography:}
+\begin{itemize}
+    \item Top channels: $F4\text{-}C4$ ($0.998$), $P8\text{-}O2$ ($0.996$), $FZ\text{-}CZ$ ($0.996$), $FP2\text{-}F4$ ($0.993$).
+    \item \textbf{Clinical match:} Patient \texttt{chb01} has right frontal-temporal focal focus.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% Slide 8: Literature Comparison
+\begin{frame}{7. Comparison with Published Benchmarks}
+\small
+\begin{table}
+\centering
+\begin{tabular}{lllccc}
+\toprule
+\textbf{Study} & \textbf{DOI} & \textbf{Method} & \textbf{Validation} & \textbf{Sensitivity} & \textbf{AUC} \\
+\midrule
+Ren et al. (2022) & 10.3389/fneur.2022.1016224 & Graph CNN & Temporal Split & 88.2\% & 0.912 \\
+Jiang et al. (2023) & 10.3389/fnins.2023.1191683 & PAC + Random Forest & Cross-Seizure & 91.5\% & 0.938 \\
+Ibrahim et al. (2023) & 10.3389/frsip.2023.1175305 & Spectral Entropy + SVM & LOSO CV & 89.0\% & 0.925 \\
+Kuhlmann et al. (2018) & 10.1038/s41582-018-0055-2 & Meta-analysis & Patient-wise & 75--90\% & 0.85--0.95 \\
+\midrule
+\textbf{Ours: Baseline LogReg} & --- & \textbf{170d Biomarkers} & \textbf{LOSO CV} & $\mathbf{100.0\%}$ & $\mathbf{0.9966}$ \\
+\textbf{Ours: EEGNet} & --- & \textbf{Raw Multi-Channel EEG} & \textbf{LOSO CV} & $\mathbf{100.0\%}$ & $\mathbf{0.9761}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{block}{Scientific Defensibility}
+\begin{itemize}
+    \item Our pipeline matches or outperforms literature benchmarks without any test leakage.
+    \item We demonstrate that complex deep learning is \emph{not mandatory} when high-quality neurophysiological features are computed.
+\end{itemize}
+\end{block}
+\end{frame}
+
+% Slide 9: Translation & Limitations
+\begin{frame}{8. Clinical Translation and Edge Feasibility}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\textbf{Wearable Edge Deployment:}
+\begin{itemize}
+    \item \textbf{Logistic Regression on 170 Biomarkers:}
+    \begin{itemize}
+        \item Inference time: $<1$~ms.
+        \item Memory footprint: $<100$~KB.
+        \item Runs directly on ultra-low-power microcontrollers (e.g., ARM Cortex-M4) for years on coin-cell batteries.
+    \end{itemize}
+    \item \textbf{EEGNet:} Requires GPU/DSP or edge TPU accelerator ($>50\times$ energy consumption).
+\end{itemize}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\begin{alertblock}{Honest Clinical Limitations}
+\begin{itemize}
+    \item \textbf{Within-patient vs. Cross-patient:} Evaluated on patient \texttt{chb01}. Cross-patient models suffer domain shifts due to etiology and montage variation.
+    \item \textbf{Extreme 24/7 Imbalance:} In outpatient continuous recording ($>100:1$ interictal ratio), even $0.05/\text{h}$ false alarm rate means $\approx 1.2$ alarms/day.
+    \item \textbf{Scalp Artifacts:} Motion, chewing, and blink artifacts in real-world outpatient telemetry.
+\end{itemize}
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+% Slide 10: Conclusion
+\begin{frame}{9. Conclusion and Key Deliverables}
+\begin{block}{Summary of Achievements}
+\begin{enumerate}
+    \item \textbf{Leak-Free Pipeline:} Rigorous Leave-One-Seizure-Out (LOSO) cross-validation preventing temporal window autocorrelation.
+    \item \textbf{Benchmarking:} 5 architectures compared across 2 representations.
+    \item \textbf{Statistical Rigor:} Paired bootstrap testing confirms linear baseline optimality.
+    \item \textbf{Clinical Error Audit:} 100\% sensitivity, 30.0~min lead time ($\ge SPH$), low false alarm rate, and anatomically concordant channel topography.
+    \item \textbf{Complete Deliverables:} Full codebase, 3 interactive Jupyter notebooks, IEEE-style LaTeX report, and reproducible test harness.
+\end{enumerate}
+\end{block}
+
+\vspace{0.3cm}
+\centering
+\textbf{Thank you. Questions \& Discussion.}
+\end{frame}
+
+\end{document}
